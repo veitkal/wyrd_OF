@@ -12,9 +12,10 @@ built by Jakob Jennerholm Hammar, summer 2020
 What follows is a program creating generative weaving drafts/notations/constructs
 and patterns to be printed in real time with a thermal printer.
 
-A computational, emergent system of "entities" based on turmites/Langtons Ant is 
-the draft with their current states. Using optical flow/computer vision via ps3EyeCam
-the system and draft is interacted with.
+A computational, emergent system of "entities" based on turmites/Langtons Ant
+is feeding the draft with their current states. By using optical flow/computer
+vision, via ps3EyeCam, the system and the drafts are interacted with and
+influenced.
 
 REFERENCE: 
 "Optical Flow Test," Adrian Sheerwood, Accessed September 1, 202y0. https://aaron-sherwood.com/blog/?p=700
