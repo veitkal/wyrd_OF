@@ -747,7 +747,8 @@ string Draft::getCurrentString() {
 //RETURNS OFIMAGE OF CURRENT PATTERN ROW FOR PRINTING
 ofImage Draft::getCurrentImg() {
   ofPixels pixels;
-  pixels.allocate(ofGetWidth(), ofGetHeight(), 4);
+  /* pixels.allocate(ofGetWidth(), ofGetHeight(), 4); */
+  pixels.allocate(800, 400, 4);
 
   currentRowFbo.readToPixels(pixels);
   ofImage currentImage;

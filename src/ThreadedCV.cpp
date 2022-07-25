@@ -62,13 +62,16 @@ void ThreadedCV::setup(int _numShafts, int _numWarps) {
   numShafts = _numShafts;
   warpMovements.resize(29);
   avrgMove.resize(100);
+
 }
 
 
 void ThreadedCV::threadedFunction() {
   camera.update();
   ofPixels pixels;
+  pixels.allocate(640, 480, 4);
   while(isThreadRunning()) {
+    if(pixels.getHeight() > 0 && pixels.getHeight() > 0) {
     if(camera.isFrameNew()) {
 
 
@@ -168,6 +171,7 @@ void ThreadedCV::threadedFunction() {
 
     counterX++;
     counterY++;
+  }
   }
 }
 

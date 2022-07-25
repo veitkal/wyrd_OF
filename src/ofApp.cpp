@@ -46,7 +46,7 @@ void ofApp::setup(){
   bg = ofColor(255); //background colour draft
   fg = ofColor(0); //foreground colour draft
 
-  print = true; //check if to print with thermal printer
+  print = false; //check if to print with thermal printer
   runDraft = true; //run/pause update
 
   numShafts = 5; //number of shafts
@@ -173,7 +173,8 @@ void ofApp::printString(string inputString){
 //--------------------------------------------------------------
 //print image with thermalPrinter
 void ofApp::printImg(ofImage inputImg){
-  printer.print(inputImg);
+  printer.print(inputImg, 200);
+  /* printer.println("nnnnnn"); */
 
 }
 //--------------------------------------------------------------
@@ -312,7 +313,12 @@ void ofApp::flowSession() {
       //            AND PRINT
       if(print && ofGetFrameNum() % 13 == 0) {
         ofColor(255);
-        printImg(draft.getCurrentImg());
+
+        //////DEBUG COMMENT
+        ofImage tempImg = draft.getCurrentImg();
+        printImg(tempImg);
+        //
+        /* draft.getCurrentImg().draw(0,0); */
       }
     }
     //          update all of the draft
@@ -488,8 +494,10 @@ void ofApp::drawUI(int _x, int _y, int _w, int _h) {
   ofPushMatrix();
   ofTranslate(xR+(27*off), yR+(15*off));
   ofScale(0.4, 0.4);
-  tCV.decCamera.draw(0,0,640,480);
-  tCV.curFlow->draw(0,0,640,480);
+
+  ////////// DEBUG COMMENTED
+  /* tCV.decCamera.draw(0,0,640,480); */
+  /* tCV.curFlow->draw(0,0,640,480); */
   ofPopMatrix();
 
   //ENTYSTEM
