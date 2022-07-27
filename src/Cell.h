@@ -18,6 +18,7 @@ public:
     void display();
 
     bool withinBounds(float _x, float _y);
+    void setColor(ofColor newColor);
     void stateFlip();
     void stateOn();
     void stateOff();

@@ -37,6 +37,8 @@ public:
   void setupTieUpSimple();
   void setupTieUpTwill();
   void setupTieUpPlex();
+  void setupThreadingClr();
+  void setupTreadlingClr();
 
   //CALCULATIONS
   void calculateFullPattern();
@@ -84,8 +86,10 @@ void pushThreading(int _tempTreadle);
   ofColor bg, fg;
 
   deque<vector<int>> threading;
+  deque<ofColor> threadingClr;
   vector<vector<int>> tieUp;
   deque<int> treadling;
+  deque<ofColor> treadlingClr;
   deque<vector<int>> drawDown;
   vector<int> shed;
   deque<int> threadingSimple; // a single deque used to draw waveforms in the threading

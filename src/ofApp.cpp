@@ -161,7 +161,8 @@ void ofApp::setupPrinter(){
   printer.setReverse(false);
   printer.setBold(true);
   printer.setAlign(MIDDLE);
-  printer.setControlParameter(7,160,0);
+  printer.setControlParameter(7,160,0); //suggesten in git issues
+  /* printer.setControlParameter(20,160,250); //arduino standard */
 
 }
 //--------------------------------------------------------------
@@ -262,7 +263,7 @@ void ofApp::keyPressed(int key){
 void ofApp::flowSession() {
   //setting update rate if movement is detected
   if(tCV.getMotionDetected()) {
-    updateRate = 4;
+    updateRate = 13;
     updateCounter = 180;
   } else {
     updateRate = 28;
@@ -311,7 +312,7 @@ void ofApp::flowSession() {
       draft.pushTreadling(tCV.getCursor());
 
       //            AND PRINT
-      if(print && ofGetFrameNum() % 13 == 0) {
+      if(print && ofGetFrameNum() % updateRate == 0) {
         ofColor(255);
 
         //////DEBUG COMMENT

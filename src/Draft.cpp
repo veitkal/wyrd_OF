@@ -3,8 +3,7 @@
  *
  * a weaving draft is a codified tool to inform the setup and operation of a weaving loom
  * to help weaving a suggested and visualized pattern
- *
- * the different parts of the draft are
+ * * the different parts of the draft are
  *
  * THREADING - how the warp threads is threaded into the different shafts of the loom
  * TIE-UP - how the foot peddles or treadles are connected to the shafts
@@ -82,8 +81,10 @@ void Draft::setup(int _numShafts, int _numWarps, float _orgX,
 
   //resizing vectors
   threading.resize(numShafts, vector<int>(numWarps));
+  threadingClr.resize(numWarps);
   tieUp.resize(numShafts, vector<int>(numShafts));
   treadling.resize(numWeft);
+  treadlingClr.resize(numWeft);
   drawDown.resize(numWeft, vector<int>(numWarps));
   threadingSimple.resize(numWarps); //used to draw waveforms
   shed.resize(numWarps);
@@ -92,7 +93,8 @@ void Draft::setup(int _numShafts, int _numWarps, float _orgX,
   setupTieUp();
   setupTreadling();
   //setupDrawDown();
-
+  setupThreadingClr();
+  setupTreadlingClr();
 
   //set up fbo used to send image to thermal printer
   currentRowFbo.allocate(printWidth, printSize, GL_RGBA);
@@ -170,6 +172,7 @@ void Draft::setupThreading() {
     for(int j = 0; j < threading[0].size(); j++) {
       int randVal = (int)ofRandom(2);
       threading[i][j] = randVal;
+      threadingClr[j] = ofColor(255, 0, 0);
     }
   }
 
@@ -236,6 +239,7 @@ void Draft::setupTreadling() {
   for(int i = 0; i < treadling.size(); i++) {
     int randVal = (int)ofRandom(numShafts);
     treadling[i] = randVal;
+    treadlingClr[i] = ofColor(0);
   }
 
 }
@@ -252,7 +256,26 @@ void Draft::setupDrawDown() {
   }
 }
 
+// SETUP COLOR
 //--------------------------------------------------------------
+
+void Draft::setupTreadlingClr() {
+  for(int i = 0; i < treadling.size(); i++) {
+    ofColor c = i % 2 == 0 ? 0 : 255;
+    treadlingClr[i] = c;
+  }
+
+}
+
+void Draft::setupThreadingClr() {
+  //setup threading with random values
+    for(int i = 0; i < threading[0].size(); i++) {
+      ofColor c = i % 2 == 1 ? 0 : 255;
+      threadingClr[i] = c;
+    }
+
+}
+
 //--------------------------------------------------------------
 
 
@@ -424,8 +447,8 @@ void Draft::drawThreading() {
 
       //if current index is 1 colour is fg, else bg
       ofColor c = threading[i][j]>0?fg:bg;
-      ofFill();
       ofSetColor(c);
+      ofFill();
 
       ofDrawRectangle(x, y, cellSize, cellSize);
     }
@@ -602,8 +625,11 @@ void Draft::drawDrawDown() {
 
       ofFill();
       //if check if val at index (ie 0-numShafts-1) is the same as j, ie x index
-      //set colour to fg if so
-      ofColor c = drawDown[i][j] == 1?fg:bg;
+      //set colour to fg if so 
+      //ofColor c = drawDown[i][j] == 1?fg:bg; //old
+      //
+      //ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; //rising shaft
+      ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; // sinking shaft
       ofSetColor(c);
 
       ofDrawRectangle(x, y, cellSize, cellSize);
@@ -612,16 +638,16 @@ void Draft::drawDrawDown() {
   }
 
   //draw grid
-  for(int i = 0; i < drawDown.size(); i++) {
-    for(int j = 0; j < drawDown[0].size(); j++) {
-      ofSetColor(fg);
-      float x1 = drawDownX + (j * cellSize);
-      float y1 = drawDownY + (i * cellSize);
+  /* for(int i = 0; i < drawDown.size(); i++) { */
+  /*   for(int j = 0; j < drawDown[0].size(); j++) { */
+  /*     ofSetColor(fg); */
+  /*     float x1 = drawDownX + (j * cellSize); */
+  /*     float y1 = drawDownY + (i * cellSize); */
 
-      ofDrawLine(x1,drawDownY, x1, drawDownY+wHeight);
-      ofDrawLine(drawDownX, y1, drawDownX + wWidth, y1);
-    }
-  }
+  /*     ofDrawLine(x1,drawDownY, x1, drawDownY+wHeight); */
+  /*     ofDrawLine(drawDownX, y1, drawDownX + wWidth, y1); */
+  /*   } */
+  /* } */
 }
 
 //--------------------------------------------------------------
@@ -682,7 +708,8 @@ void Draft::drawCurrentRow() {
     //       ofDrawLine(x, crY, x, y);
 
     //setting current colour of each cell
-    ofColor c = shed[i]>0?0:255;
+    /* ofColor c = shed[i]>0?0:255; */ //old
+    ofColor c = shed[i]>0?treadlingClr[0]:threadingClr[i];
     ofSetColor(c);
 
     ofDrawRectangle(x,crY, printSize, printSize);
@@ -702,7 +729,8 @@ void Draft::drawPattern(float _px, float _py, float _pw, float _ph) {
       ofFill();
       //if check if val at index (ie 0-numShafts-1) is the same as j, ie x index
       //set colour to fg if so
-      ofColor c = drawDown[i][j] == 1?fg:bg;
+      //ofColor c = drawDown[i][j] == 1?fg:bg; //old
+      ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; // sinking shaft
       ofSetColor(c);
 
       ofDrawRectangle(x, y, psz, psz);

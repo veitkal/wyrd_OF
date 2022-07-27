@@ -35,6 +35,9 @@ void Cell::display() {
   ofDrawRectangle(posX, posY, sz, sz);
 }
 
+void Cell::setColor(ofColor newColor) {
+  fg = newColor;
+}
 
 //CHECK WITHIN BOUNDS OF CELL
 bool Cell::withinBounds(float _x, float _y) {
