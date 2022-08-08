@@ -71,6 +71,7 @@ void pushThreading(int _tempTreadle);
   ofImage draftToImg();
   string getCurrentString();
   ofImage getCurrentImg();
+  ofPixels getCurrentPixels();
 
   int numWarps, numShafts, numWeft;
   float orgX, orgY, width, height, wWidth, wHeight, tWidth, tHeight, cellSize, boxPad, cellPad, printWidth, printSize;

@@ -784,3 +784,16 @@ ofImage Draft::getCurrentImg() {
 
   return currentImage;
 }
+
+//RETURNS OFPIXELS OF CURRENT PATTERN ROW FOR PRINTING
+ofPixels Draft::getCurrentPixels() {
+  ofPixels pixels;
+  /* pixels.allocate(ofGetWidth(), ofGetHeight(), 4); */
+  pixels.allocate(800, 400, 4);
+
+  currentRowFbo.readToPixels(pixels);
+  //ofImage currentImage;
+  //currentImage.setFromPixels(pixels);
+
+  return pixels;
+}

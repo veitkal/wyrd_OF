@@ -93,6 +93,10 @@ void ofApp::setup(){
   ofClear(0);
   patternFbo.end();
 
+  //SETUP OSC
+  oscRes.setup(PORT);
+  cout << "OSC listening on port " << PORT << endl;
+
 }
 
 // EXIT FUNCTION TO CLOSE DOWN PRINTER AND OPTIONALLY PRINT EMPTY LINE
@@ -117,6 +121,9 @@ void ofApp::update(){
     printSession();
     fieldMovement();
   }
+
+  //listen for OSC messages
+  oscListen();
 }
 
 //--------------------------------------------------------------
@@ -174,6 +181,8 @@ void ofApp::printString(string inputString){
 //--------------------------------------------------------------
 //print image with thermalPrinter
 void ofApp::printImg(ofImage inputImg){
+	ofPixels pxls = inputImg.getPixels();
+  //printer.print(inputImg, 100);
   printer.print(inputImg, 200);
   /* printer.println("nnnnnn"); */
 
@@ -317,7 +326,9 @@ void ofApp::flowSession() {
 
         //////DEBUG COMMENT
         ofImage tempImg = draft.getCurrentImg();
-        printImg(tempImg);
+//printer.printImage(tempImg);
+	
+        printImg(tempImg.getPixels());
         //
         /* draft.getCurrentImg().draw(0,0); */
       }
@@ -534,6 +545,45 @@ void ofApp::drawUI(int _x, int _y, int _w, int _h) {
     ofDrawRectangle(mvX+offVal, mvY, mvW, -fieldHeight);
   }
 
+}
+
+//--------------------------------------------------------------
+void ofApp::oscListen(){
+
+	// listen for waiting messages
+	while(oscRes.hasWaitingMessages()){
+		// get the next message
+		ofxOscMessage m;
+		oscRes.getNextMessage(m);
+		string msgString = m.getAddress();
+		cout << "OSC msg: " << msgString << endl;
+
+		// check for mouse moved message
+		if(m.getAddress() == "/displaymode") {
+
+			int d = (int)m.getArgAsFloat(0);
+
+			switch(d) {
+				case 1: 
+					displayMode = 0;
+					break;
+				case 2: 
+					displayMode = 1;
+					break;
+				case 3: 
+					displayMode = 2;
+					break;
+				case 4: 
+					displayMode = 3;
+					break;
+				default:
+					break;
+			}
+			cout << " Diplay mode is: " << displayMode << endl;
+
+
+		}
+	}
 
 }
 

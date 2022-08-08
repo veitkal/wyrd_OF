@@ -11,6 +11,9 @@
 //addons
 #include "ofxThermalPrinter.h"
 #include "ofxOpenCv.h"
+#include "ofxOsc.h"
+#include "ofxCv.h"
+
 /*
  * WYRD
  *
@@ -45,7 +48,8 @@ DEPENDENCIES:
 'ofxPS3EyeGrabber',
 'ofxKinect',
  */
-#include "ofxCv.h"
+
+#define PORT 33666
 
 class ofApp : public ofBaseApp{
 
@@ -65,6 +69,7 @@ public:
   void repeatSession();
   void fieldMovement();
   void drawUI(int _x, int _y, int _w, int _h);
+  void oscListen();
 
   void keyPressed(int key);
   void keyReleased(int key);
@@ -100,8 +105,7 @@ public:
   //PRINTER
   ofxThermalPrinter printer;
 
-
-
+  ofxOscReceiver oscRes;
 
 
 };
