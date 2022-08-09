@@ -159,7 +159,7 @@ void ThreadedCV::threadedFunction() {
       if (dampenedflow.x < -5. || dampenedflow.x > 5. || dampenedflow.y < -5. || dampenedflow.y > 5.) {
         motionDetected = true;
         counterX = 0;
-      } else if (counterX > 200){ //500
+      } else if (counterX > 10){ //500
         motionDetected = false;
       }
     }

@@ -49,20 +49,22 @@ void ofApp::setup(){
   print = false; //check if to print with thermal printer
   runDraft = true; //run/pause update
 
-  numShafts = 5; //number of shafts
-  numWarps = 50; //number of warps
+  numShafts = 8; //number of shafts
+  numWarps = 74; //number of warps
   offsetX = 10; //offset where to begin drawing draft
   offsetY = 10;
   orgX = offsetX; //origin of draft ie translated 0
   orgY = offsetY;
-  width = 800 - (offsetX * 2); //temporary size
+
+  // Set size - old = 800x480
+  width = 640 - (offsetX * 2); //temporary size
   height = 480 - (offsetY * 2);
   numBoxPad = 1; //padding between drawnBoxes, calculated as a number of cells ie n*cellSize
   updateRate = 5;
   flipCounter = 0; //counter used in print-mode
   updateCounter = 0;
   //updateModes: 0=sequence, 1=repeat, 2=mirror, 3=spiral
-  updateMode = 3;
+  updateMode = 1;
   //displayModes: 0 = draftOnly, 1=patternOnly, 2=entSystem only, 3=uiOnly, 4=all of them
   displayMode = 0;
   session = false; //false = flow/interactive, true = print
@@ -82,13 +84,13 @@ void ofApp::setup(){
 
 
   //SETUP ENTSYSTEM
-  entSys.setup(100, 800/100, numShafts, 0, 0, 800, 480);
+  entSys.setup(100, 800/100, numShafts, 0, 0, 640, 480);
 
   //MOVEMENT FIELD ARRAY, number of counters
   movementFieldArr.resize(numShafts);
 
   //SETUP PATTERN FBO
-  patternFbo.allocate(800, 480);
+  patternFbo.allocate(640, 480);
   patternFbo.begin();
   ofClear(0);
   patternFbo.end();
@@ -107,7 +109,7 @@ void ofApp::exit(){
 
 //--------------------------------------------------------------
 void ofApp::update(){
-  //UPDATERATE CAP TO AVOID CRASHES
+  //UPDATE RATE CAP TO AVOID CRASHES
   if(updateRate < 1) {
     updateRate = 1;
   }
@@ -130,23 +132,24 @@ void ofApp::update(){
 void ofApp::draw(){
   ofSetColor(0);
   ofFill();
-  ofDrawRectangle(0,0, 800, 480);
+  ofDrawRectangle(0,0,ofGetWindowWidth(), ofGetWindowHeight());
 
   //DISPLAY
   if(displayMode == 0) {
-    draft.draw();
+    draft.drawPattern(0,0, ofGetWindowWidth(), ofGetWindowHeight());
   } else if(displayMode == 1) {
-    draft.drawPattern(0,0, 800, 480);
+    draft.draw();
   } else if(displayMode == 2){
     entSys.display();
   } else if(displayMode == 3) {
-    draft.draw();
-    draft.drawPattern(0,500, 800, 480);
-    ofPushMatrix();
-    ofTranslate(800, 0);
-    entSys.display();
-    ofPopMatrix();
-    drawUI(800,500, 800, 435);
+    //draft.draw();
+    //draft.drawPattern(0,500, 800, 480);
+    //ofPushMatrix();
+    //ofTranslate(800, 0);
+    //entSys.display();
+    //ofPopMatrix();
+    //drawUI(800,500, 800, 435);
+    drawUI(0,0, ofGetWindowWidth(), ofGetWindowHeight());
   }
 
   //quick FPS UI
@@ -203,7 +206,8 @@ void ofApp::keyPressed(int key){
   if (key == '1') { draft.setupTieUpSimple();}
   if (key == '2') { draft.setupTieUpPlex();}
   if (key == '3') { draft.setupTieUpTwill();}
-  if (key == '4') { draft.setupTieUpRandom();}
+  if (key == '4') { draft.setupTieUpTwill2();}
+  if (key == '5') { draft.setupTieUpRandom();}
 
   //runDrafts
   if (key == 'r'){
@@ -272,17 +276,19 @@ void ofApp::keyPressed(int key){
 void ofApp::flowSession() {
   //setting update rate if movement is detected
   if(tCV.getMotionDetected()) {
-    updateRate = 13;
+    updateRate = 1;
     updateCounter = 180;
   } else {
-    updateRate = 28;
+    updateRate = 48;
   }
 
   //changing mode if movement detected in y-axis
+  /*
   if (updateMode > 3) updateMode = 0;
   if(tCV.getYreset()) {
     updateMode = (int)ofRandom(3);
   }
+  */
 
   //updating the drafts
   if (runDraft && ofGetFrameNum() % updateRate == 0 ) {
@@ -299,7 +305,8 @@ void ofApp::flowSession() {
         draft.pushThreading(entSys.getStateTotal());
       } else if(updateMode == 1) {
         //OR as repeats
-        draft.updateThreadingRepeat(entSys.getStateArr());
+        //draft.updateThreadingRepeat(entSys.getStateArr());
+        draft.updateThreadingRecurMirror(entSys.getStateArr());
       } else if(updateMode == 2) {
         //                or as mirrored repeats
         draft.updateThreadingMirror(entSys.getStateArr());
@@ -337,6 +344,7 @@ void ofApp::flowSession() {
     draft.update();
 
     //changing updateMode when movement in y-axis is detected
+    /*
     if (tCV.yReset) {
       if(updateMode < 4) {
         updateMode++;
@@ -344,6 +352,7 @@ void ofApp::flowSession() {
         updateMode = 0;
       }
     }
+    */
 
     //morph the entSystem/change the cellgrid
     if (morphCounter > 9000 * 30) {
@@ -441,7 +450,7 @@ void ofApp::fieldMovement() {
     if( movementFieldArr[tCV.cursorX] > movementFieldMax) {
       movementFieldArr[tCV.cursorX] = 0.0;
       entSys.randomIndividRule(tCV.cursorX);
-      draft.updateTieUpRand(tCV.cursorX);
+      //draft.updateTieUpRand(tCV.cursorX);
     } else {
       movementFieldArr[tCV.cursorX]+=0.1;
     }
@@ -485,21 +494,23 @@ void ofApp::drawUI(int _x, int _y, int _w, int _h) {
   ofSetColor(255);
   ofDrawRectangle(0,0, 40, 10);
   for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 5; j++) {
+    for (int j = 0; j < numShafts; j++) {
       ofSetColor(0);
       ofDrawLine(0, i * 10, 40, i * 10);
       ofDrawLine(j*10, 0, j*10, 10);
     }
   }
+
   ofSetColor(0);
   ofDrawRectangle(tCV.cursorX*10, 0, 10, 10);
 
+
   //draw cursor flow line
   ofSetColor(255);
-  float testX = ofMap(tCV.prev.x, 0, ofGetWidth(), 0, 200);
+  float testX = ofMap(tCV.prev.x, 0, ofGetWidth(), 0, 160);
   ofSetLineWidth(3);
   ofDrawLine(50,0, 250, 0);
-  ofDrawRectangle(testX+50-5, -5, 10, 10);
+  ofDrawRectangle(testX+70, -5, 10, 10);
   ofPopMatrix();
 
   // draw camera+ curflow
@@ -514,21 +525,21 @@ void ofApp::drawUI(int _x, int _y, int _w, int _h) {
 
   //ENTYSTEM
   ofSetColor(255);
-  txt.drawString("::Ent System::", xR+(27 *off), yR+(1*off));
-  txt.drawString("Num ents: " + ofToString(entSys.numEnts), xR+(27 *off), yR+(2*off));
+  txt.drawString("::Ent System::", xR+(23 *off), yR+(1*off));
+  txt.drawString("Num ents: " + ofToString(entSys.numEnts), xR+(23 *off), yR+(2*off));
   vector<int> currStates;
   for (int i = 0; i < entSys.numEnts; i++) {
     currStates.push_back(entSys.entArr[i].state);
   }
-  txt.drawString("Current Rules: " + ofToString(currStates), xR+(27 *off), yR+(3*off));
-  txt.drawString("Morph : " + ofToString(entSys.morph), xR+(28 *off), yR+(4*off));
+  txt.drawString("Current Rules: " + ofToString(currStates), xR+(23 *off), yR+(3*off));
+  txt.drawString("Morph : " + ofToString(entSys.morph), xR+(23 *off), yR+(4*off));
 
   //ENVIRONMENTAL INFLUENCE
-  txt.drawString("::Environmental Influence::", xR+(27 *off), yR+(6*off));
-  txt.drawString("Movement Field Max: " + ofToString(movementFieldMax), xR+(27 *off), yR+(7*off));
-  txt.drawString("Movement Field Array :" + ofToString(movementFieldArr), xR+(27 *off), yR+(8*off));
+  txt.drawString("::Environmental Influence::", xR+(23 *off), yR+(6*off));
+  txt.drawString("Movement Field Max: " + ofToString(movementFieldMax), xR+(23 *off), yR+(7*off));
+  txt.drawString("Movement Field Array :" + ofToString(movementFieldArr), xR+(23 *off), yR+(8*off));
 
-  float mvX = xR+(29*off);
+  float mvX = xR+(25*off); //org 29
   float mvY = yR+(14*off);
   float mvW = 20;
   float mvH = 75;
@@ -580,9 +591,87 @@ void ofApp::oscListen(){
 					break;
 			}
 			cout << " Diplay mode is: " << displayMode << endl;
+		} else if(m.getAddress() == "/updatemode") {
+
+			int d = (int)m.getArgAsFloat(0);
+
+			switch(d) {
+				case 1: 
+					updateMode = 0;
+					break;
+				case 2: 
+					updateMode = 1;
+					break;
+				case 3: 
+					updateMode = 2;
+					break;
+				case 4: 
+					updateMode = 3;
+					break;
+				default:
+					break;
+			}
+			cout << " Update mode is: " << updateMode << endl;
+		} else if(m.getAddress() == "/tieup") {
+
+			int d = (int)m.getArgAsFloat(0);
+
+			switch(d) {
+				case 1: 
+					draft.setupTieUpSimple();
+					break;
+				case 2: 
+					draft.setupTieUpPlex();
+					break;
+				case 3: 
+					draft.setupTieUpTwill();
+					break;
+				case 4: 
+					draft.setupTieUpTwill2();
+					break;
+				case 5: 
+					draft.setupTieUpRandom();
+					break;
+				default:
+					break;
+			}
+			cout << " Tie-up  is: " << d - 1 << endl;
+		} else if(m.getAddress() == "/kinect/id_count") {
 
 
+			if(ofRandom(1) > 0.75 ) {
+				int threadRand = (int) ofRandom(4);
+				updateMode = threadRand % 3;
+			cout << " ThreadRand: " << threadRand << endl;
+			}
+
+			if(ofRandom(1) > 0.6 ) {
+				int tieupRand = (int) ofRandom(5);
+				switch(tieupRand) {
+					case 0: 
+						draft.setupTieUpSimple();
+						break;
+					case 1: 
+						draft.setupTieUpPlex();
+						break;
+					case 2: 
+						draft.setupTieUpTwill();
+						break;
+					case 3: 
+						draft.setupTieUpTwill2();
+						break;
+					case 4: 
+						draft.setupTieUpRandom();
+						break;
+					default:
+						break;
+				}
+
+				cout << " tieupRand: " << tieupRand << endl;
+			}
 		}
+
+
 	}
 
 }

@@ -37,6 +37,7 @@ public:
   void setupTieUpSimple();
   void setupTieUpTwill();
   void setupTieUpPlex();
+  void setupTieUpTwill2();
   void setupThreadingClr();
   void setupTreadlingClr();
 
@@ -49,6 +50,7 @@ public:
   void updateThreading();
   void updateThreadingRepeat(vector<int> _repeatArr);
   void updateThreadingRecur(vector<int> _repeatArr);
+  void updateThreadingRecurMirror(vector<int> _repeatArr);
   void updateThreadingMirror(vector<int> _repeatArr);
   void updateTieUp();
   void updateTieUpRand(int idx);
@@ -94,6 +96,8 @@ void pushThreading(int _tempTreadle);
   deque<vector<int>> drawDown;
   vector<int> shed;
   deque<int> threadingSimple; // a single deque used to draw waveforms in the threading
+
+  bool colorOffset;
 
   //fbo for thermal printing
   ofFbo currentRowFbo;

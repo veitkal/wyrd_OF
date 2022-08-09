@@ -89,8 +89,10 @@ void Draft::setup(int _numShafts, int _numWarps, float _orgX,
   threadingSimple.resize(numWarps); //used to draw waveforms
   shed.resize(numWarps);
 
+  colorOffset = false;
+
   setupThreading();
-  setupTieUp();
+  setupTieUpSimple();
   setupTreadling();
   //setupDrawDown();
   setupThreadingClr();
@@ -219,6 +221,16 @@ void Draft::setupTieUpTwill() {
       int tempState2 = ((j+i) % (numShafts))!=0?false:true;
       int tempState3 = tempState+tempState2;
       tieUp[i][j] = tempState3;
+    }
+  }
+}
+void Draft::setupTieUpTwill2() {
+  for(int i = 0; i < tieUp.size(); i++) {
+    for(int j = 0; j < tieUp[0].size(); j++) {
+      //RANDOM
+      int tempState = (((j+i) % numShafts) == 3)!=0?false:true;
+
+      tieUp[i][j] = tempState;
     }
   }
 }
@@ -355,6 +367,48 @@ void Draft::updateThreadingRecur(vector<int> _repeatArr) {
 }
 
 //--------------------------------------------------------------
+//Updates with a recurring, mirrored from an input array.
+void Draft::updateThreadingRecurMirror(vector<int> _repeatArr) {
+  int repNum = _repeatArr.size();
+  int tempVal = 0;
+  int mirrorSize = threadingSimple.size() / 2;
+  vector<int> tempArr;
+  tempArr.resize(mirrorSize);
+
+  // Creating half a pattern for half the threading
+  for (int i = 0; i < mirrorSize; i++)  {
+    if (i>repNum) {
+      if(ofRandom(1) > 0.8) {
+        tempVal = _repeatArr[i%repNum] * (int)ofRandom(i)%repNum;
+      } else {
+        tempVal = _repeatArr[i%repNum] * i%repNum;
+
+      }
+
+    } else {
+      tempVal = _repeatArr[i%repNum] * i%repNum;
+    }
+    tempArr[i] = tempVal;
+    //threadingSimple[i] = tempVal;
+  }
+
+  // generate a new threading
+  int idx = 0;
+  for (int i = 0; i < threadingSimple.size(); i++) {
+	// Check if index is above half the size of threading
+	if(i > mirrorSize) {
+		// If so mirror 
+		idx = threadingSimple.size() - i;
+	} else {
+		idx = i;
+	}
+   threadingSimple[i] = tempArr[idx];
+  }
+
+
+}
+
+//--------------------------------------------------------------
 //Updates with a repeated pattern from an input array.
 void Draft::updateThreadingRepeat(vector<int> _repeatArr) {
   int repNum = _repeatArr.size();
@@ -390,6 +444,9 @@ void Draft::updateTreadling() {
   //cout << tempTreadle << endl;
   treadling.push_front(tempTreadle);
   treadling.pop_back();
+
+  // Offset color so that the treadling is not static in the drawdown but seem to keep its color when updated
+  colorOffset = !colorOffset;
 }
 
 //----------------------
@@ -398,6 +455,7 @@ void Draft::updateTreadling() {
 void Draft::pushTreadling(int _tempTreadle) {
   treadling.push_front(_tempTreadle);
   treadling.pop_back();
+  colorOffset = !colorOffset;
 }
 //----------------------------------------
 
@@ -583,6 +641,7 @@ void Draft::drawTreadling() {
       //if check if val at index (ie 0-numShafts-1) is the same as j, ie x index
       //set colour to fg if so
       ofColor c = treadling[i] == j?fg:bg;
+
       ofSetColor(c);
 
       ofDrawRectangle(x, y, cellSize, cellSize);
@@ -629,7 +688,16 @@ void Draft::drawDrawDown() {
       //ofColor c = drawDown[i][j] == 1?fg:bg; //old
       //
       //ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; //rising shaft
-      ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; // sinking shaft
+
+      ofColor threadingCurrentClr = threadingClr[j];
+      ofColor treadlingCurrentClr = treadlingClr[i];
+      if(colorOffset) {
+              treadlingCurrentClr = treadlingClr[(i + 1)  % treadling.size()];
+      } else {
+	      treadlingCurrentClr = treadlingClr[i];
+      }
+
+      ofColor c = drawDown[i][j] == 1?treadlingCurrentClr:threadingCurrentClr; // sinking shaft
       ofSetColor(c);
 
       ofDrawRectangle(x, y, cellSize, cellSize);
@@ -730,7 +798,19 @@ void Draft::drawPattern(float _px, float _py, float _pw, float _ph) {
       //if check if val at index (ie 0-numShafts-1) is the same as j, ie x index
       //set colour to fg if so
       //ofColor c = drawDown[i][j] == 1?fg:bg; //old
-      ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; // sinking shaft
+     //ofColor c = drawDown[i][j] == 1?treadlingClr[i]:threadingClr[j]; // sinking shaft
+      //ofSetColor(c);
+
+      ofColor threadingCurrentClr = threadingClr[j];
+      ofColor treadlingCurrentClr = treadlingClr[i];
+      
+      if(colorOffset) {
+              treadlingCurrentClr = treadlingClr[(i + 1)  % treadling.size()];
+      } else {
+	      treadlingCurrentClr = treadlingClr[i];
+      }
+
+      ofColor c = drawDown[i][j] == 1?treadlingCurrentClr:threadingCurrentClr; // sinking shaft
       ofSetColor(c);
 
       ofDrawRectangle(x, y, psz, psz);
