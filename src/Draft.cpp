@@ -372,12 +372,14 @@ void Draft::updateThreadingRecurMirror(vector<int> _repeatArr) {
   int repNum = _repeatArr.size();
   int tempVal = 0;
   int mirrorSize = threadingSimple.size() / 2;
+  int check = (repNum % mirrorSize);
+  cout << "threading: " << threadingSimple.size() << " rep: " << repNum << " mirror: " << mirrorSize <<  endl;
   vector<int> tempArr;
   tempArr.resize(mirrorSize);
 
   // Creating half a pattern for half the threading
   for (int i = 0; i < mirrorSize; i++)  {
-    if (i>repNum) {
+    if (i>repNum - 1) {
       if(ofRandom(1) > 0.8) {
         tempVal = _repeatArr[i%repNum] * (int)ofRandom(i)%repNum;
       } else {
@@ -392,11 +394,12 @@ void Draft::updateThreadingRecurMirror(vector<int> _repeatArr) {
     //threadingSimple[i] = tempVal;
   }
 
+
   // generate a new threading
   int idx = 0;
   for (int i = 0; i < threadingSimple.size(); i++) {
 	// Check if index is above half the size of threading
-	if(i > mirrorSize) {
+	if(i > mirrorSize - 1) {
 		// If so mirror 
 		idx = threadingSimple.size() - i;
 	} else {

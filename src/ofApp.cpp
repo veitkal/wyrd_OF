@@ -50,7 +50,7 @@ void ofApp::setup(){
   runDraft = true; //run/pause update
 
   numShafts = 8; //number of shafts
-  numWarps = 74; //number of warps
+  numWarps = 16; //number of warps
   offsetX = 10; //offset where to begin drawing draft
   offsetY = 10;
   orgX = offsetX; //origin of draft ie translated 0
@@ -276,7 +276,7 @@ void ofApp::keyPressed(int key){
 void ofApp::flowSession() {
   //setting update rate if movement is detected
   if(tCV.getMotionDetected()) {
-    updateRate = 1;
+    updateRate = 2;
     updateCounter = 180;
   } else {
     updateRate = 48;
