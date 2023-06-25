@@ -65,6 +65,7 @@ public:
   void printImg(ofImage inputImg);
   void printFullDraft();
   void printSession();
+  void flowSessionKinect();
   void flowSession();
   void repeatSession();
   void fieldMovement();
@@ -91,6 +92,9 @@ public:
   int updateMode, displayMode;
   vector<float> movementFieldArr;
   ofTrueTypeFont txt;
+
+  bool kinectMotionDetected;
+  int kinectCursor;
 
   //COLOURS
   ofColor bg, fg;

@@ -99,6 +99,10 @@ void ofApp::setup(){
   oscRes.setup(PORT);
   cout << "OSC listening on port " << PORT << endl;
 
+  kinectMotionDetected = false;
+  kinectCursor = 0;
+
+
 }
 
 // EXIT FUNCTION TO CLOSE DOWN PRINTER AND OPTIONALLY PRINT EMPTY LINE
@@ -116,7 +120,7 @@ void ofApp::update(){
 
   if (session == false) {
     //update with optical flow and camera interaction
-    flowSession();
+    flowSessionKinect();
     //influence entSystem
     fieldMovement();
   } else {
@@ -136,7 +140,7 @@ void ofApp::draw(){
 
   //DISPLAY
   if(displayMode == 0) {
-    draft.drawPattern(0,0, ofGetWindowWidth(), ofGetWindowHeight());
+    draft.drawPattern(0,0, 640, 480);
   } else if(displayMode == 1) {
     draft.draw();
   } else if(displayMode == 2){
@@ -270,6 +274,99 @@ void ofApp::keyPressed(int key){
   }
 }
 
+
+//--------------------------------------------------------------
+//session to use camera interaction, the one used in the installation
+void ofApp::flowSessionKinect() {
+	cout << "KINECT: " << kinectMotionDetected << " : " << kinectCursor << endl;
+  //setting update rate if movement is detected
+  if(kinectMotionDetected) {
+    updateRate = 1;
+    updateCounter = 180;
+  } else {
+    updateRate = 48;
+  }
+
+  //changing mode if movement detected in y-axis
+  /*
+  if (updateMode > 3) updateMode = 0;
+  if(tCV.getYreset()) {
+    updateMode = (int)ofRandom(3);
+  }
+  */
+
+  //updating the drafts
+  if (runDraft && ofGetFrameNum() % updateRate == 0 ) {
+    //ENT SYSTEM
+    entSys.update(kinectCursor);
+
+    //update threading if movement not detected by pushing states from entSystem
+    if (kinectMotionDetected == false) {
+      draft.updateWarp = false;
+      draft.updateWeft = false;
+
+      //Either as sequential one by one
+      if(updateMode == 0) {
+        draft.pushThreading(entSys.getStateTotal());
+      } else if(updateMode == 1) {
+        //OR as repeats
+        //draft.updateThreadingRepeat(entSys.getStateArr());
+        draft.updateThreadingRecurMirror(entSys.getStateArr());
+      } else if(updateMode == 2) {
+        //                or as mirrored repeats
+        draft.updateThreadingMirror(entSys.getStateArr());
+
+      } else if(updateMode == 3) {
+        //                or as recursion
+        draft.updateThreadingRecur(entSys.getStateArr());
+
+      } else {
+        //                else as mode 0
+        draft.pushThreading(entSys.getStateTotal());
+
+      }
+    }
+    //IF motion is detected, push treadling according to optical flow movements
+    if (kinectMotionDetected == true) {
+      draft.updateWarp = false;
+      draft.updateWeft = false;
+      draft.pushTreadling(kinectCursor);
+
+      //            AND PRINT
+      if(print && ofGetFrameNum() % updateRate == 0) {
+        ofColor(255);
+
+        //////DEBUG COMMENT
+        ofImage tempImg = draft.getCurrentImg();
+//printer.printImage(tempImg);
+	
+        printImg(tempImg.getPixels());
+        //
+        /* draft.getCurrentImg().draw(0,0); */
+      }
+    }
+    //          update all of the draft
+    draft.update();
+
+    //changing updateMode when movement in y-axis is detected
+    /*
+    if (tCV.yReset) {
+      if(updateMode < 4) {
+        updateMode++;
+      } else {
+        updateMode = 0;
+      }
+    }
+    */
+
+    //morph the entSystem/change the cellgrid
+    if (morphCounter > 9000 * 30) {
+      morphCounter = 0;
+      entSys.morph;
+    }
+    morphCounter++;
+  }
+}
 
 //--------------------------------------------------------------
 //session to use camera interaction, the one used in the installation
@@ -669,6 +766,16 @@ void ofApp::oscListen(){
 
 				cout << " tieupRand: " << tieupRand << endl;
 			}
+
+		} else if(m.getAddress() == "/kinect/motion_detected") {
+			int d = (int)m.getArgAsFloat(0);
+		
+			kinectMotionDetected = d > 0 ? true : false;
+
+		} else if(m.getAddress() == "/kinect/cursor") {
+			int d = (int)m.getArgAsFloat(0);
+			kinectCursor = d;
+
 		}
 
 

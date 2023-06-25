@@ -37,8 +37,8 @@ void ThreadedCV::setup(int _numShafts, int _numWarps) {
   //    vidGrabber.setPixelFormat(OF_PIXELS_NATIVE);
   camera.setDesiredFrameRate(60);
   camera.initGrabber(640, 480);
-  camera.getGrabber<ofxPS3EyeGrabber>()->setAutogain(false);
-  camera.getGrabber<ofxPS3EyeGrabber>()->setAutoWhiteBalance(false);
+  camera.getGrabber<ofxPS3EyeGrabber>()->setAutogain(true);
+  camera.getGrabber<ofxPS3EyeGrabber>()->setAutoWhiteBalance(true);
 
   cursorX = 0; //used for controling the treadling ie where the treadling is, influenced by movement in x axis
   counterY = 0; //counter used as lag or small delay to smoothen flip/trigger of bool

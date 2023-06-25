@@ -1,5 +1,8 @@
 #GITIGNORE c++/openFrameworks
 
+.swo
+.swap
+
 #keep data
 /bin/*
 !/bin/data/
